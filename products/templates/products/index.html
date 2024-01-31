@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2>Product Filter</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <label for="categorySelect">Select Category:</label>
+            <select id="categorySelect" class="form-control">
+                <option value="" selected>All Categories</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="brandSelect">Select Brand:</label>
+            <select id="brandSelect" class="form-control">
+                <option value="" selected>All Brands</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="searchInput">Search:</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
+        </div>
+    </div>
+
+    <div class="row my-4">
+        <div class="col-md-12">
+            <h4>Filtered Products:</h4>
+            <ul id="productList" class="list-group">
+                <!-- Products will be dynamically populated using AJAX -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js" integrity="sha512-+k1pnlgt4F1H8L7t3z95o3/KO+o78INEcXTbnoJQ/F2VqDVhWoaiVml/OEHv9HsVgxUaVW+IbiZPUJQfF/YxZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        function loadCategories() {
+            $.ajax({
+                url: '{% url "products:category-list" %}',  
+                method: 'GET',
+                success: function (data) {
+                    var categorySelect = $('#categorySelect');
+                    categorySelect.empty();
+                    categorySelect.append('<option value="" selected>All Categories</option>');
+                    $.each(data, function (index, category) {
+                        categorySelect.append('<option value="' + category.CATEGORY + '">' + category.CATEGORY + '</option>');
+                    });
+                },
+                error: function (error) {
+                    console.log('Error loading categories:', error);
+                }
+            });
+        }
+
+        function loadBrands() {
+            $.ajax({
+                url: '{% url "products:brand-list" %}',  
+                method: 'GET',
+                success: function (data) {
+                    var brandSelect = $('#brandSelect');
+                    brandSelect.empty();
+                    brandSelect.append('<option value="" selected>All Brands</option>');
+                    $.each(data, function (index, brand) {
+                        brandSelect.append('<option value="' + brand.BRAND + '">' + brand.BRAND + '</option>');
+                    });
+                },
+                error: function (error) {
+                    console.log('Error loading brands:', error);
+                }
+            });
+        }
+
+        function loadProducts() {
+            var category = $('#categorySelect').val();
+            var brand = $('#brandSelect').val();
+            var search = $('#searchInput').val();
+
+            $.ajax({
+                url: '{% url "products:product-list" %}?category=' + category + '&brand=' + brand + '&search=' + search,  
+                method: 'GET',
+                success: function (data) {
+                    var productList = $('#productList');
+                    productList.empty();
+                    $.each(data, function (index, product) {
+                        productList.append('<li class="list-group-item">' + product.ITEM_NAME + '</li>');
+                    });
+                },
+                error: function (error) {
+                    console.log('Error loading products:', error);
+                }
+            });
+        }
+
+        loadCategories();
+        loadBrands();
+        loadProducts();
+
+        $('#categorySelect, #brandSelect, #searchInput').change(function () {
+            loadProducts();  // Reload products when filters change
+        });
+    });
+</script>
+
+</body>
+</html>
